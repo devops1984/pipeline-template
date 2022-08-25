@@ -1,1 +1,47 @@
+version: 1
 
+name: Demo Build Template
+description: "This will create a multibranch pipeline job for container builds"
+
+type: pipeline-template
+templateType: MULTIBRANCH
+
+parameters:
+  - name: github_organization
+    type: string
+    displayName: Specify the GitHub Organisation e.g. devops1984 (mandatory)
+
+  - name: github_repo
+    type: string
+    displayName: Specify the GitHub Repository e.g. demo-shared-library (mandatory)
+
+  - name: github_creds
+    type: credentials
+    displayName: Specify the GitHub Credentials ID name for the source code repository (mandatory)
+
+  - name: dockerfiles
+    type: string
+    displayName: Specify the path to the Dockerfile(s) as semicolon delimited string e.g. /Dockerfile (optional)
+    
+  - name: docker_tag
+    type: string
+    displayName: Specify the container tagname e.g. k2r2t2/sharedlibdemo:latest (mandatory)
+
+multibranch:
+  branchSource:
+    github:
+      repoOwner: ${github_organization}
+      repository: ${github_repo}
+      credentialsId: ${github_creds}
+      traits:
+        - gitHubBranchDiscovery:
+            strategyId: 3
+
+    strategy:
+      $class: DefaultBranchPropertyStrategy # All branches get the same properties
+      props:
+        - $class: NoTriggerBranchProperty # Suppress automatic SCM triggering
+
+  orphanedItemStrategy:
+    daysToKeep: 60
+  scanRepositoryInterval: 15 minutes
